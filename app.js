@@ -3,8 +3,8 @@ const noteInput = document.getElementById('noteInput');
 const addNoteBtn = document.getElementById('addNoteBtn');
 const notesContainer = document.getElementById('notesContainer');
 
-// Initialize notes array
 let notes = JSON.parse(localStorage.getItem('notes')) || [];
+let editIndex = -1; // To keep track of the note being edited
 
 // Function to render notes on page
 function renderNotes() {
@@ -18,6 +18,14 @@ function renderNotes() {
         const noteText = document.createElement('p');
         noteText.textContent = note;
 
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.classList.add('editBtn');
+        editBtn.addEventListener('click', () => {
+            editNote(index);
+        });
+
         // Delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
@@ -26,8 +34,9 @@ function renderNotes() {
             deleteNote(index);
         });
 
-        // Append note and button to div
+        // Append note, edit, and delete button to div
         noteDiv.appendChild(noteText);
+        noteDiv.appendChild(editBtn);
         noteDiv.appendChild(deleteBtn);
         
         // Append the note div to the notes container
@@ -35,13 +44,21 @@ function renderNotes() {
     });
 }
 
-// Function to add a new note
+// Function to add or update a note
 function addNote() {
     const note = noteInput.value.trim();
     if (note) {
-        notes.push(note); // Add to array
+        if (editIndex === -1) {
+            // Add new note
+            notes.push(note);
+        } else {
+            // Update the note being edited
+            notes[editIndex] = note;
+            editIndex = -1; // Reset edit index after updating
+        }
         localStorage.setItem('notes', JSON.stringify(notes)); // Save to localStorage
         noteInput.value = ''; // Clear input
+        addNoteBtn.textContent = 'Add Note'; // Reset button text
         renderNotes(); // Re-render the notes
     }
 }
@@ -53,7 +70,14 @@ function deleteNote(index) {
     renderNotes(); // Re-render the notes
 }
 
-// Event listener for adding a note
+// Function to edit a note
+function editNote(index) {
+    noteInput.value = notes[index]; // Set the input value to the note content
+    editIndex = index; // Store the index of the note being edited
+    addNoteBtn.textContent = 'Update Note'; // Change button text to indicate edit mode
+}
+
+// Event listener for adding/updating a note
 addNoteBtn.addEventListener('click', addNote);
 
 // Initial render on page load
